@@ -10,7 +10,7 @@ const serverErrorHandler = require('./middleware/500');
 // const getModel = require('./middleware/model-finder');
 const usersModel = require('./auth/models/users-model');
 const basicAuth = require('./auth/middleware/basic');
-
+const bearerAuth = require('./auth/middleware/bearer');
 
 // Global MiddleWare where you could call it anywhere and has a global scope
 app.use(express.json());
@@ -22,7 +22,7 @@ app.use(serverErrorHandler);
 app.post('/signup', postAuthDetails);
 app.post('/signin', basicAuth, verifyAuthDetails);
 
-app.get('/users', getUserDetails);
+app.get('/users', bearerAuth, getUserDetails);
 // get model
 // app.param('model', getModel);
 
