@@ -51,22 +51,11 @@ class Model {
   get(_id) {  
     return USERS.find({});
   }
-//   /**
-//  * updates the specified _id with the record object
-//  * @param {String} _id is a mongoose generated ID to search for
-//  * @param {object} record is a valid object input ready to use in schema.
-//  */
-//   update(_id, record) {
-//     return this.schema.findByIdAndUpdate(_id, record);
-//   }
-//   /**
-//  * deletes the specified ID from mongoose db
-//  * @param {String} _id is a mongoose generated ID to search for
-// */
-//   delete(_id) {
-//     return this.schema.findByIdAndDelete(_id);
-//   }
-
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} user is the user data that would be authenticated
+ * @param {String} password is the password that will be compared locally 
+*/
   async authenticateBasic(user, password) {
     let userDB = await USERS.findOne({ username: user });
     console.log('userSB', userDB);
@@ -78,12 +67,38 @@ class Model {
 
     return Promise.reject();
   };
-
-  async generateToken(user) {
-
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} user is the string used to generate a token associated with it
+ * 
+*/
+  generateToken(user) {
     let token = jwt.sign({username: user.username}, SECRET);
     return token;
   };
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} token will be compared locally for a quick and 
+ * streamlined authentication for every other request shortly after signin.
+ * 
+*/
+  async authenticateToken(token) {
+    try {
+        let tokenObject = jwt.verify(token, SECRET);
+        let userDB = await USERS.findOne({ username: tokenObject.username });
+        if (userDB) {
+            return Promise.resolve({
+                tokenObject: tokenObject,
+                user: userDB
+            });
+        } else {
+            return Promise.reject();
+        }
+    } catch(e) {
+        return Promise.reject();
+    }
+  
+};
 }
 
 module.exports = new Model();
