@@ -4,14 +4,23 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRET = 'mytokensecret';
-
+/**
+ * defines actions specified for each role 
+ */
+let roles = {
+  user: ['read'],
+  writer: ['read', 'create'],
+  editor: ['read', 'create', 'update'],
+  admin: ['read', 'create', 'update', 'delete'],
+};
   /**
  * defines the static schema that is used universally as 
  * username and password
  */
 const USERS = mongoose.model('CustomerModel', {
   username: { type: String, required: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  role: { type: String, required: true, enum: ['user', 'writer', 'editor', 'admin']},
 });
 
 class Model {
@@ -32,10 +41,10 @@ class Model {
     if (!userDB) {
       // save user if it does not exist
       try {
-          record.password = await bcrypt.hash(record.password, 5);
-          console.log('new Record', record)
+        record.password = await bcrypt.hash(record.password, 5);
+        console.log('new Record', record);
       } catch(e) {
-          console.log("error in bcrypt: ", e)
+        console.log('error in bcrypt: ', e);
       }
 
       let newRecord = new USERS(record);
@@ -49,8 +58,25 @@ class Model {
  * @param {String} _id is a mongoose generated ID to search for
 */
   get(_id) {  
-    return USERS.find({});
+    return _id ? USERS.find({_id}) : USERS.find({});
   }
+
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} _id is a mongoose generated ID to search for
+*/
+  update(_id) {  
+    return _id ? USERS.findByIdAndUpdate({_id}) : Promise.reject();
+  }
+
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} _id is a mongoose generated ID to search for
+*/
+  delete(_id) {  
+    return _id ? USERS.findByIdAndDelete() : Promise.reject();
+  }
+
   /**
  * gets the specified ID from mongoose db
  * @param {String} user is the user data that would be authenticated
@@ -61,21 +87,25 @@ class Model {
     console.log('userSB', userDB);
 
     if (userDB) {
-        let valid = await bcrypt.compare(password, userDB.password);
-        return valid ? userDB : Promise.reject();
+      let valid = await bcrypt.compare(password, userDB.password);
+      return valid ? userDB : Promise.reject();
     }
 
-    return Promise.reject();
-  };
+    return;  
+  }
   /**
  * gets the specified ID from mongoose db
  * @param {String} user is the string used to generate a token associated with it
  * 
 */
   generateToken(user) {
-    let token = jwt.sign({username: user.username}, SECRET);
+    let token = jwt.sign({
+      username: user.username,
+      actions: roles[user.role],
+    }, SECRET);
+    console.log(token);
     return token;
-  };
+  }
   /**
  * gets the specified ID from mongoose db
  * @param {String} token will be compared locally for a quick and 
@@ -84,21 +114,20 @@ class Model {
 */
   async authenticateToken(token) {
     try {
-        let tokenObject = jwt.verify(token, SECRET);
-        let userDB = await USERS.findOne({ username: tokenObject.username });
-        if (userDB) {
-            return Promise.resolve({
-                tokenObject: tokenObject,
-                user: userDB
-            });
-        } else {
-            return Promise.reject();
-        }
-    } catch(e) {
+      let tokenObject = jwt.verify(token, SECRET);
+      let userDB = await USERS.findOne({ username: tokenObject.username });
+      if (userDB) {
+        return Promise.resolve({
+          tokenObject: tokenObject,
+          user: userDB,
+        });
+      } else {
         return Promise.reject();
+      }
+    } catch(e) {
+      return Promise.reject();
     }
-  
-};
+  }
 }
 
 module.exports = new Model();
