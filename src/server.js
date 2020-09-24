@@ -48,7 +48,7 @@ function verifyAuthDetails(req, res, next) {
   if (req.token) {
     res.status(200).send({
       token: req.token,
-      user: req.user
+      user: req.user,
     });
   } else {
     res.status(401).send('User Does Not Exists!');
