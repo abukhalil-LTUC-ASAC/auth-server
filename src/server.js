@@ -11,6 +11,7 @@ const serverErrorHandler = require('./middleware/500');
 const usersModel = require('./auth/models/users-model');
 const basicAuth = require('./auth/middleware/basic');
 const bearerAuth = require('./auth/middleware/bearer');
+const aclMiddleWare = require('./auth/middleware/acl-middleware');
 
 // Global MiddleWare where you could call it anywhere and has a global scope
 app.use(express.json());
@@ -22,7 +23,10 @@ app.use(serverErrorHandler);
 app.post('/signup', postAuthDetails);
 app.post('/signin', basicAuth, verifyAuthDetails);
 
-app.get('/users', bearerAuth, getUserDetails);
+app.get('/users/', bearerAuth, aclMiddleWare('read'), getUserDetails);
+app.get('/users/:id', bearerAuth, aclMiddleWare('read'), getUserDetails);
+app.put('/users/:id', bearerAuth, aclMiddleWare('update'), updateUserDetails);
+app.delete('/users/:id', bearerAuth, aclMiddleWare('delete'), deleteUserDetails);
 // get model
 // app.param('model', getModel);
 
@@ -52,7 +56,8 @@ function verifyAuthDetails(req, res, next) {
 }
 
 function getUserDetails(req, res, next) {
-  usersModel.get().then(data => {
+  let id = req.params.id;
+  usersModel.get(id).then(data => {
     let output = {
       count: 0,
       results: [],
@@ -61,6 +66,26 @@ function getUserDetails(req, res, next) {
     output.count = data.length;
     output.results = data;
     res.status(200).json(output);
+  }).catch(err=> {
+    console.log(err);
+    next(err);
+  });
+}
+
+function updateUserDetails(req, res, next) {
+  let id = req.params.id;
+  usersModel.update(id).then(data => {
+    res.status(200).json(data);
+  }).catch(err=> {
+    console.log(err);
+    next(err);
+  });
+}
+
+function deleteUserDetails(req, res, next) {
+  let id = req.params.id;
+  usersModel.delete(id).then(data => {
+    res.status(200).json(data);
   }).catch(err=> {
     console.log(err);
     next(err);
