@@ -10,17 +10,21 @@ const serverErrorHandler = require('./middleware/500');
 // const getModel = require('./middleware/model-finder');
 const usersModel = require('./auth/models/users-model');
 const basicAuth = require('./auth/middleware/basic');
+const ouath = require('./auth/middleware/oauth');
 const bearerAuth = require('./auth/middleware/bearer');
 
 // Global MiddleWare where you could call it anywhere and has a global scope
 app.use(express.json());
 app.use(cors());
 app.use(serverErrorHandler);
+app.use(express.static('./public'));
 
 // routes as MiddleWare
 // generic model
 app.post('/signup', postAuthDetails);
 app.post('/signin', basicAuth, verifyAuthDetails);
+
+app.get('/oauth', ouath, useOAuth);
 
 app.get('/users', bearerAuth, getUserDetails);
 // get model
@@ -44,11 +48,15 @@ function verifyAuthDetails(req, res, next) {
   if (req.token) {
     res.status(200).send({
       token: req.token,
-      user: req.user
+      user: req.user,
     });
   } else {
     res.status(401).send('User Does Not Exists!');
   }
+}
+
+function useOAuth(req, res, next) {
+  res.status(200).send(req.token);
 }
 
 function getUserDetails(req, res, next) {

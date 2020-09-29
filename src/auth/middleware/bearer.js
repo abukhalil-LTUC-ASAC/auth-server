@@ -9,24 +9,24 @@ const users = require('../models/users-model');
 // header key Authorization 
 // value of it {Bearer token}
 module.exports = (req, res, next)=> {
-    if (!req.headers.authorization) {
-        return next('Invalid Login, No Headers !!');
-    }
-    console.log("req.headers.authoriation : ",req.headers.authorization);
-    let bearer = req.headers.authorization.split(' ');
+  if (!req.headers.authorization) {
+    return next('Invalid Login, No Headers !!');
+  }
+  console.log('req.headers.authoriation : ',req.headers.authorization);
+  let bearer = req.headers.authorization.split(' ');
    
-    if (bearer[0] == 'Bearer') {
-        const token = bearer[1];
-        // authenticate this token and get the valid user
-        users.authenticateToken(token).then(validUser=> {
-            console.log("validUser ---> ",validUser);
-            req.user = validUser;
-            next();
-        }).catch(err=> next('Invalid Token!'));
+  if (bearer[0] == 'Bearer') {
+    const token = bearer[1];
+    // authenticate this token and get the valid user
+    users.authenticateToken(token).then(validUser=> {
+      console.log('validUser ---> ',validUser);
+      req.user = validUser;
+      next();
+    }).catch(err=> next('Invalid Token!'));
 
-    } else {
-        return next('Invalid Bearer!!');
-    }
+  } else {
+    return next('Invalid Bearer!!');
+  }
 
 
 

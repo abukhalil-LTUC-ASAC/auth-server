@@ -5,13 +5,13 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRET = 'mytokensecret';
 
-  /**
+/**
  * defines the static schema that is used universally as 
  * username and password
  */
 const USERS = mongoose.model('CustomerModel', {
   username: { type: String, required: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
 });
 
 class Model {
@@ -32,10 +32,10 @@ class Model {
     if (!userDB) {
       // save user if it does not exist
       try {
-          record.password = await bcrypt.hash(record.password, 5);
-          console.log('new Record', record)
+        record.password = await bcrypt.hash(record.password, 5);
+        console.log('new Record', record);
       } catch(e) {
-          console.log("error in bcrypt: ", e)
+        console.log('error in bcrypt: ', e);
       }
 
       let newRecord = new USERS(record);
@@ -61,12 +61,12 @@ class Model {
     console.log('userSB', userDB);
 
     if (userDB) {
-        let valid = await bcrypt.compare(password, userDB.password);
-        return valid ? userDB : Promise.reject();
+      let valid = await bcrypt.compare(password, userDB.password);
+      return valid ? userDB : Promise.reject();
     }
 
     return Promise.reject();
-  };
+  }
   /**
  * gets the specified ID from mongoose db
  * @param {String} user is the string used to generate a token associated with it
@@ -75,7 +75,7 @@ class Model {
   generateToken(user) {
     let token = jwt.sign({username: user.username}, SECRET);
     return token;
-  };
+  }
   /**
  * gets the specified ID from mongoose db
  * @param {String} token will be compared locally for a quick and 
@@ -84,21 +84,21 @@ class Model {
 */
   async authenticateToken(token) {
     try {
-        let tokenObject = jwt.verify(token, SECRET);
-        let userDB = await USERS.findOne({ username: tokenObject.username });
-        if (userDB) {
-            return Promise.resolve({
-                tokenObject: tokenObject,
-                user: userDB
-            });
-        } else {
-            return Promise.reject();
-        }
-    } catch(e) {
+      let tokenObject = jwt.verify(token, SECRET);
+      let userDB = await USERS.findOne({ username: tokenObject.username });
+      if (userDB) {
+        return Promise.resolve({
+          tokenObject: tokenObject,
+          user: userDB,
+        });
+      } else {
         return Promise.reject();
+      }
+    } catch(e) {
+      return Promise.reject();
     }
   
-};
+  }
 }
 
 module.exports = new Model();

@@ -3,9 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Oauth Github</title>
 </head>
 <body>
-  
+  <main>
+    <a id="oauth">Login</a>
+    <script>
+      let URL = 'https://github.com/login/oauth/authorize';
+      let options = {
+          client_id: 'Iv1.66e80b1bf42dd781',
+          redirect_uri: 'http://localhost:3000/oauth'
+      };
+      
+      let queryString = Object.keys(options).map((key)=> {
+          return `${key}=` + encodeURIComponent(options[key]);
+      }).join('&');
+
+      let authUrl = `${URL}?${queryString}`;
+
+      let link = document.getElementById('oauth');
+      link.setAttribute('href', authUrl);
+
+  </script>
+  </main>
 </body>
 </html>
