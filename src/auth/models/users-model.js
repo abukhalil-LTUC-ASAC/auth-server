@@ -1,9 +1,11 @@
 'use strict';
 
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const SECRET = 'mytokensecret';
+const secret = process.env.SECRET;
+
 /**
  * defines actions specified for each role 
  */
@@ -90,8 +92,7 @@ class Model {
       let valid = await bcrypt.compare(password, userDB.password);
       return valid ? userDB : Promise.reject();
     }
-
-    return;  
+    return Promise.reject();
   }
   /**
  * gets the specified ID from mongoose db
@@ -114,7 +115,7 @@ class Model {
 */
   async authenticateToken(token) {
     try {
-      let tokenObject = jwt.verify(token, SECRET);
+      let tokenObject = jwt.verify(token, secret);
       let userDB = await USERS.findOne({ username: tokenObject.username });
       if (userDB) {
         return Promise.resolve({

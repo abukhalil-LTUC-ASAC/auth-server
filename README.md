@@ -32,4 +32,5 @@ Clone the repo, and run the following commands to install the required dependenc
 Unit testing with: npm test using supertest to test each route. 
 
 ### Unified Modeling Language (UML)
-![UML image](resources/.PNG)
+![UML image](uml-auth.png)
+

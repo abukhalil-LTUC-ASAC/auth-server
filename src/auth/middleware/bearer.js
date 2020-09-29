@@ -20,9 +20,4 @@ module.exports = (req, res, next)=> {
   } else {
     return next('Invalid Bearer!!');
   }
-
-
-
-
-
 };

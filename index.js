@@ -3,7 +3,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const server = require('./src/server.js');
-const MONGOOSE_URL = process.env.MONGOOSE_URL;
+const MONGOOSE_URL = 'mongodb://localhost:27017/auth-db';
 
 const mongooseOptions = {
   useNewUrlParser: true,
@@ -14,4 +14,4 @@ const mongooseOptions = {
 
 mongoose.connect(MONGOOSE_URL, mongooseOptions);
 
-server.start(4000);
+server.start(3000);
