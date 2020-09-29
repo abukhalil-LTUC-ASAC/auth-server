@@ -33,3 +33,4 @@ Unit testing with: npm test using supertest to test each route.
 
 ### Unified Modeling Language (UML)
 ![UML image](uml-auth.png)
+

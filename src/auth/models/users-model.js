@@ -7,12 +7,22 @@ const jwt = require('jsonwebtoken');
 const secret = process.env.SECRET;
 
 /**
+ * defines actions specified for each role 
+ */
+let roles = {
+  user: ['read'],
+  writer: ['read', 'create'],
+  editor: ['read', 'create', 'update'],
+  admin: ['read', 'create', 'update', 'delete'],
+};
+  /**
  * defines the static schema that is used universally as 
  * username and password
  */
 const USERS = mongoose.model('CustomerModel', {
   username: { type: String, required: true },
   password: { type: String, required: true },
+  role: { type: String, required: true, enum: ['user', 'writer', 'editor', 'admin']},
 });
 
 class Model {
@@ -50,8 +60,25 @@ class Model {
  * @param {String} _id is a mongoose generated ID to search for
 */
   get(_id) {  
-    return USERS.find({});
+    return _id ? USERS.find({_id}) : USERS.find({});
   }
+
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} _id is a mongoose generated ID to search for
+*/
+  update(_id) {  
+    return _id ? USERS.findByIdAndUpdate({_id}) : Promise.reject();
+  }
+
+  /**
+ * gets the specified ID from mongoose db
+ * @param {String} _id is a mongoose generated ID to search for
+*/
+  delete(_id) {  
+    return _id ? USERS.findByIdAndDelete() : Promise.reject();
+  }
+
   /**
  * gets the specified ID from mongoose db
  * @param {String} user is the user data that would be authenticated
@@ -65,7 +92,6 @@ class Model {
       let valid = await bcrypt.compare(password, userDB.password);
       return valid ? userDB : Promise.reject();
     }
-
     return Promise.reject();
   }
   /**
@@ -74,7 +100,11 @@ class Model {
  * 
 */
   generateToken(user) {
-    let token = jwt.sign({username: user.username}, secret);
+    let token = jwt.sign({
+      username: user.username,
+      actions: roles[user.role],
+    }, SECRET);
+    console.log(token);
     return token;
   }
   /**
@@ -98,7 +128,6 @@ class Model {
     } catch(e) {
       return Promise.reject();
     }
-  
   }
 }
 
