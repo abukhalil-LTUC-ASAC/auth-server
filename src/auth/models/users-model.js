@@ -1,9 +1,10 @@
 'use strict';
 
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const SECRET = 'mytokensecret';
+const secret = process.env.SECRET;
 
 /**
  * defines the static schema that is used universally as 
@@ -73,7 +74,7 @@ class Model {
  * 
 */
   generateToken(user) {
-    let token = jwt.sign({username: user.username}, SECRET);
+    let token = jwt.sign({username: user.username}, secret);
     return token;
   }
   /**
@@ -84,7 +85,7 @@ class Model {
 */
   async authenticateToken(token) {
     try {
-      let tokenObject = jwt.verify(token, SECRET);
+      let tokenObject = jwt.verify(token, secret);
       let userDB = await USERS.findOne({ username: tokenObject.username });
       if (userDB) {
         return Promise.resolve({

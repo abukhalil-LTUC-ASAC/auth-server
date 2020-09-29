@@ -46,6 +46,7 @@ async function postAuthDetails(req, res, next) {
 
 function verifyAuthDetails(req, res, next) {
   if (req.token) {
+    res.cookie('auth', req.token);
     res.status(200).send({
       token: req.token,
       user: req.user,
